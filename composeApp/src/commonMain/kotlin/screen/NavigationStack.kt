@@ -2,7 +2,7 @@ package screen
 
 import androidx.compose.runtime.mutableStateListOf
 
-class NavigationStack<T>(initial: T) {
+class NavigationStack<T>(val initial: T) {
     private val stack = mutableStateListOf(initial)
     fun push(t: T) {
         stack.add(t)
@@ -15,4 +15,9 @@ class NavigationStack<T>(initial: T) {
     }
 
     fun lastWithIndex() = stack.withIndex().last()
+    fun clear() {
+        stack.clear()
+        stack.add(initial)
+//        stack = mutableStateListOf(initial)
+    }
 }

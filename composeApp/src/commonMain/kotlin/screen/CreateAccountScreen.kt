@@ -17,10 +17,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import component.ErrorView
 import component.InputField
-import component.LabelButton
+import component.LabeledButton
 import component.password
 import kotlinx.coroutines.launch
 
@@ -33,6 +36,9 @@ fun CreateAccountScreen(
     val login = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val repeatPassword = remember { mutableStateOf("") }
+    val passwordVisible = remember { mutableStateOf(false) }
+    val reEnterPasswordVisible = remember { mutableStateOf(false) }
+    val showError = remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -62,6 +68,7 @@ fun CreateAccountScreen(
                     labelState = password,
                     showProgress = { false },
                     keyboardOptions = KeyboardOptions.Default.password(),
+                    visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
                     placeholder = {
                         Text(Resources.passwordLabel)
                     }
@@ -72,16 +79,22 @@ fun CreateAccountScreen(
                     labelState = repeatPassword,
                     showProgress = { false },
                     keyboardOptions = KeyboardOptions.Default.password(),
+                    visualTransformation = if (reEnterPasswordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
                     placeholder = {
                         Text(Resources.confirmPasswordLabel)
                     }
                 )
+                ErrorView(showError)
             }
             Spacer(modifier = Modifier.height(16.dp))
-            LabelButton(Modifier, Resources.createButton) {
+            LabeledButton(Modifier, Resources.createButton) {
                 dependencies.ioScope.launch {
-                    dependencies.userApi.create(login.value, password.value)
-                    onCreateAccountClick()
+                    if (login.value.isBlank() || password.value.isBlank() || repeatPassword.value.isBlank()) {
+                        showError.value = Resources.fillInAllFields
+                    } else {
+                        dependencies.userApi.create(login.value, password.value)
+                        onCreateAccountClick()
+                    }
                 }
             }
         }

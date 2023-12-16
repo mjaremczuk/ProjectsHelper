@@ -1,4 +1,7 @@
 object Resources {
+    val failedToCreateAccount: String = "Failed to create account"
+    val enterLoginPassword: String = "Enter login and password to enter"
+    val fillInAllFields: String = "Fill in all fields"
     val welcomeButtonLabel: String = "Start"
     val welcomeHeader: String = "Welcome to Compose browser sample app"
     val welcomeDescription: String = "Click button to start using demo app with real use case usage"
@@ -12,6 +15,5 @@ object Resources {
     val createAccountHeader: String = "Create account"
     val createButton: String = "Create"
     val homeWelcomeHeader: String = "Welcome in"
-
-
+    val homeLogOutButton: String = "Log out"
 }

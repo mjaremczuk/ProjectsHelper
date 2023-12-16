@@ -15,9 +15,11 @@ fun main() {
     CanvasBasedWindow(canvasElementId = "ComposeTarget") {
         val ioScope: CoroutineScope = rememberCoroutineScope { Dispatchers.Default }
         val dependencies = remember(ioScope) { buildDependencies(ioScope, window) }
+        window.onpopstate = {
+            it.state.toString()
+        }
         App(dependencies)
     }
-//    val st = window.applicationCache
 }
 
 
@@ -28,9 +30,14 @@ private fun buildDependencies(ioScope: CoroutineScope, window: Window): Dependen
         override val ioScope: CoroutineScope = ioScope
 
         override val userApi: UserApi = object : UserApi {
-            override suspend fun create(login: String, password: String): Boolean {
+            override suspend fun create(login: String, password: String): User? {
                 depWindow.localStorage.setItem("login", login)
                 depWindow.localStorage.setItem("password", password)
+                return User(login, password)
+            }
+
+            override suspend fun signOut(): Boolean {
+                depWindow.localStorage.clear()
                 return true
             }
 
@@ -43,7 +50,8 @@ private fun buildDependencies(ioScope: CoroutineScope, window: Window): Dependen
 
         override val navigationApi: NavigationApi = object : NavigationApi {
             override fun addToHistory(text: String) {
-                depWindow.history.pushState(title = text, data = null)
+//                TODO handle browser history
+                depWindow.history.pushState(title = text, data = text.toJsString())
             }
         }
     }

@@ -43,7 +43,10 @@ fun App(dependencies: Dependencies) {
 
                     Login -> LogInScreen(
                         dependencies = dependencies,
-                        onContinueClick = {},
+                        onContinueClick = {
+                            dependencies.navigationApi.addToHistory("login")
+                            navigationStack.push(Home(it))
+                        },
                         onCreateAccountClick = {
                             dependencies.navigationApi.addToHistory("login")
                             navigationStack.push(CreateAccount)
@@ -68,6 +71,9 @@ fun App(dependencies: Dependencies) {
                         HomeScreen(
                             dependencies = dependencies,
                             user = page.user,
+                            onSignOutAction = {
+                                navigationStack.clear()
+                            }
                         )
                     }
 

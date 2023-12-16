@@ -22,26 +22,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import component.CheckItem
+import component.ErrorView
 import component.InputField
-import component.LabelButton
+import component.LabeledButton
 import component.password
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import model.User
 
 @Composable
 fun LogInScreen(
     dependencies: Dependencies,
-    onContinueClick: () -> Unit,
+    onContinueClick: (User) -> Unit,
     onCreateAccountClick: () -> Unit,
 ) {
 
     val login = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val rememberLogin = remember { mutableStateOf(false) }
+    val passwordVisible = remember { mutableStateOf(false) }
 
-    val showError = remember { mutableStateOf(false) }
+    val showError = remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -71,11 +77,12 @@ fun LogInScreen(
                     labelState = password,
                     showProgress = { false },
                     keyboardOptions = KeyboardOptions.Default.password(),
+                    visualTransformation = if (passwordVisible.value) VisualTransformation.None else PasswordVisualTransformation(),
                     placeholder = {
                         Text(Resources.passwordLabel)
                     }
                 )
-
+                ErrorView(showError)
                 Spacer(modifier = Modifier.height(8.dp))
                 CheckItem(
                     modifier = Modifier,
@@ -93,33 +100,39 @@ fun LogInScreen(
             }
             Spacer(modifier = Modifier.height(16.dp))
             Row {
-                LabelButton(Modifier, Resources.loginButton) {
+                LabeledButton(Modifier, Resources.loginButton) {
                     dependencies.ioScope.launch {
-                        val result = dependencies.userApi.create(
-                            login = login.value,
-                            password = password.value
-                        )
-                        if (result) {
-                            onContinueClick()
+                        if (login.value.isBlank() || password.value.isBlank()) {
+                            showError.value =  Resources.enterLoginPassword
                         } else {
-                            showError.value = true
+                            val result = dependencies.userApi.create(
+                                login = login.value,
+                                password = password.value
+                            )
+                            if (result != null) {
+                                onContinueClick(result)
+                            } else {
+                                showError.value = Resources.failedToCreateAccount
+                            }
                         }
                     }
                 }
                 Spacer(Modifier.width(16.dp))
-                LabelButton(Modifier, Resources.createAccountButton, onCreateAccountClick)
-                if (showError.value) {
-                    Text("error!")
-                }
+                LabeledButton(Modifier, Resources.createAccountButton, onCreateAccountClick)
             }
         }
     }
     LaunchedEffect(Unit) {
         dependencies.ioScope.launch {
+            showError.value = ""
             dependencies.userApi.getSavedUser()?.let {
                 login.value = it.login
                 password.value = it.password
             }
         }
     }
+}
+
+private fun CoroutineScope.signIn() {
+
 }
