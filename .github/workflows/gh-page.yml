@@ -44,7 +44,7 @@ jobs:
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
-          source: ./build/dist/wasmJs/productionExecutable/
+          source: ./composeApp/build/dist/wasmJs/productionExecutable/
 #          destination: ./_site
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
