@@ -1,38 +1,84 @@
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import model.AddProject
+import model.AddVersion
+import model.CreateAccount
+import model.EditVersion
+import model.Home
+import model.Login
+import model.Page
+import model.Settings
+import model.Welcome
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import screen.CreateAccountScreen
+import screen.HomeScreen
+import screen.LogInScreen
+import screen.NavigationStack
+import screen.WelcomeScreen
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
-fun App() {
+fun App(dependencies: Dependencies) {
     MaterialTheme {
-        var greetingText by remember { mutableStateOf("Hello World!") }
-        var showImage by remember { mutableStateOf(false) }
+        val navigationStack = remember { NavigationStack<Page>(Welcome) }
+
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Button(onClick = {
-                greetingText = "Compose: ${Greeting().greet()}"
-                showImage = !showImage
-            }) {
-                Text(greetingText)
-            }
-            AnimatedVisibility(showImage) {
-                Image(
-                    painterResource("compose-multiplatform.xml"),
-                    null
-                )
+            AnimatedContent(navigationStack.lastWithIndex()) { (index, page) ->
+                when (page) {
+                    Welcome -> WelcomeScreen(
+                        dependencies = dependencies,
+                        onContinueClick = {
+                            dependencies.navigationApi.addToHistory("welcome")
+                            navigationStack.push(Login)
+                        },
+                        onSavedUserAction = { user ->
+                            navigationStack.push(Home(user))
+                        })
+
+                    Login -> LogInScreen(
+                        dependencies = dependencies,
+                        onContinueClick = {
+                            dependencies.navigationApi.addToHistory("login")
+                            navigationStack.push(Home(it))
+                        },
+                        onCreateAccountClick = {
+                            dependencies.navigationApi.addToHistory("login")
+                            navigationStack.push(CreateAccount)
+                        }
+                    )
+
+                    CreateAccount -> CreateAccountScreen(
+                        dependencies = dependencies,
+                        onCreateAccountClick = {
+                            dependencies.navigationApi.addToHistory("create-account")
+                        }
+                    )
+
+                    AddVersion -> TODO()
+
+                    AddProject -> TODO()
+
+
+                    EditVersion -> TODO()
+
+                    is Home -> {
+                        HomeScreen(
+                            dependencies = dependencies,
+                            user = page.user,
+                            onSignOutAction = {
+                                navigationStack.clear()
+                            }
+                        )
+                    }
+
+                    Settings -> TODO()
+                }
             }
         }
     }

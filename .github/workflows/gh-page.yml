@@ -36,13 +36,6 @@ jobs:
           cache: gradle
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      - name: Cache Gradle packages
-        uses: actions/cache@v3
-        id: restore-build
-        with:
-          path: |
-            ./*
-          key: ${{ github.sha }}
       - name: Build with Gradle
         run: ./gradlew wasmJsBrowserDistribution
       - name: Setup Pages
