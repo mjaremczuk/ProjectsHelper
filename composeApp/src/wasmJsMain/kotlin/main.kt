@@ -2,12 +2,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.CanvasBasedWindow
+import api.JiraApi
 import api.NavigationApi
+import api.ProjectApi
 import api.UserApi
 import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import model.User
 import org.w3c.dom.Window
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -29,24 +30,9 @@ private fun buildDependencies(ioScope: CoroutineScope, window: Window): Dependen
 
         override val ioScope: CoroutineScope = ioScope
 
-        override val userApi: UserApi = object : UserApi {
-            override suspend fun create(login: String, password: String): User? {
-                depWindow.localStorage.setItem("login", login)
-                depWindow.localStorage.setItem("password", password)
-                return User(login, password)
-            }
+        override val userApi: UserApi by lazy { UserService(depWindow) }
 
-            override suspend fun signOut(): Boolean {
-                depWindow.localStorage.clear()
-                return true
-            }
-
-            override suspend fun getSavedUser(): User? {
-                val login = depWindow.localStorage.getItem("login") ?: return null
-                val pass = depWindow.localStorage.getItem("password") ?: return null
-                return User(login, pass)
-            }
-        }
+        override val jiraApi: JiraApi by lazy { JiraService(depWindow, projectApi, userApi) }
 
         override val navigationApi: NavigationApi = object : NavigationApi {
             override fun addToHistory(text: String) {
@@ -54,4 +40,6 @@ private fun buildDependencies(ioScope: CoroutineScope, window: Window): Dependen
                 depWindow.history.pushState(title = text, data = text.toJsString())
             }
         }
+
+        override val projectApi: ProjectApi by lazy { ProjectService(depWindow) }
     }

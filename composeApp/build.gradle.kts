@@ -16,6 +16,7 @@ kotlin {
         browser {
             commonWebpackConfig {
                 outputFileName = "composeApp.js"
+                version = "1.0.0"
             }
         }
         binaries.executable()

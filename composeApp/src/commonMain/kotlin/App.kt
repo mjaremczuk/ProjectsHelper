@@ -20,6 +20,7 @@ import screen.CreateAccountScreen
 import screen.HomeScreen
 import screen.LogInScreen
 import screen.NavigationStack
+import screen.SettingsScreen
 import screen.WelcomeScreen
 
 @OptIn(ExperimentalResourceApi::class)
@@ -57,6 +58,7 @@ fun App(dependencies: Dependencies) {
                         dependencies = dependencies,
                         onCreateAccountClick = {
                             dependencies.navigationApi.addToHistory("create-account")
+                            navigationStack.push(Home(it))
                         }
                     )
 
@@ -73,11 +75,22 @@ fun App(dependencies: Dependencies) {
                             user = page.user,
                             onSignOutAction = {
                                 navigationStack.clear()
+                            },
+                            onAddProject = {},
+                            onAddVersion = {},
+                            onAddCredentials = {
+                                navigationStack.push(Settings(it))
                             }
                         )
                     }
 
-                    Settings -> TODO()
+                    is Settings -> SettingsScreen(
+                        dependencies = dependencies,
+                        getUser = { page.user },
+                        onBack = {
+                            navigationStack.back()
+                        },
+                    )
                 }
             }
         }

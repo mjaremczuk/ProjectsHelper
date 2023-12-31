@@ -26,11 +26,12 @@ import component.InputField
 import component.LabeledButton
 import component.password
 import kotlinx.coroutines.launch
+import model.User
 
 @Composable
 fun CreateAccountScreen(
     dependencies: Dependencies,
-    onCreateAccountClick: () -> Unit,
+    onCreateAccountClick: (user: User) -> Unit,
 ) {
 
     val login = remember { mutableStateOf("") }
@@ -92,8 +93,12 @@ fun CreateAccountScreen(
                     if (login.value.isBlank() || password.value.isBlank() || repeatPassword.value.isBlank()) {
                         showError.value = Resources.fillInAllFields
                     } else {
-                        dependencies.userApi.create(login.value, password.value)
-                        onCreateAccountClick()
+                        val user = dependencies.userApi.create(login.value, password.value)
+                        if (user != null) {
+                            onCreateAccountClick(user)
+                        } else {
+                            showError.value = Resources.failedToCreateAccount
+                        }
                     }
                 }
             }
